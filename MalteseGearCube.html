@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maltese Gear Cube</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    dt {  font-weight: bold;  display: inline; }
+    dd {  display: inline;  margin-left: 0.5em; }
+    dd::after {  content: "";  display: block; }
+
+    dl.aligned {  display: grid; grid-template-columns: max-content auto; gap: 0.5em 1em; }
+    dl.aligned.dt {  font-weight: bold;  display: inline; }
+    dl.aligned dd {  margin: 0; }
+
+    figure {
+	display: inline-block;
+    }
+    
+    figcaption {
+	text-align: center;
+	font-size: 0.9em;
+	color: gray;
+    }
+
+    .figure-row {
+	display: flex;
+	gap: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Maltese Gear Cube</h1>
+
+  <div class="figure-row">
+    <figure>
+      <img src="images/Scrambled.jpg" width="400" alt="The cube mixed up.">
+      <figcaption>The cube mixed up, waiting to be solved</figcaption>
+    </figure>
+    <figure>
+      <img src="images/Solved.jpg" width="400" alt="The solved cube.">
+      <figcaption>A solved cube</figcaption>
+    </figure>
+  </div>
+
+
+  <h2>Basic Information</h2>
+  <dl>
+    <dt>Difficulty</dt>
+    <dd>Very hard</dd>
+<!--
+    <dt>Similar to:</dt>
+    <dd>TBD</dd>
+-->
+    <dt>Links</dt>
+    <dd><a href="https://www.puzzlemaster.ca/browse/cubepuzzle/mefferts/16657-maltese-gear-cube?srsltid=AfmBOor0dJZFrMq9kTMXHgo9zV0pFk-1npLVnRv6DIey3CuLVFE6g8MJ">Puzzle Master</a></dd>
+    <dt>Manufacturer</dt>
+    <dd>Meffert</dd>
+  </dl>
+
+  <h2>Description</h2>
+  <p>This is a beautiful puzzle with unique "rotating gear" pieces, and
+    it feels great to hold and twist. It's also the hardest puzzle I
+    have, the only one I had to write code for to help keep track of
+    things. It is very rewarding to work out a solution, but I have to
+    warn that it's somewhat tedious to work through all the steps and
+    actually solve it.</p>
+
+  <p>The eight corners are equivalent to a 2x2x2 Rubik's cube, but
+    there are gear pieces that interlock with the corners and
+    rotate. A unique feature is that turning one of the slices by
+    90&deg; causes the "middle slice" of adjacent gear, edge, and face
+    center pieces to rotate by 45&deg;, so that such pieces can end up
+    out of position (e.g. a face center piece can end up in an edge
+    position). What makes it especially difficult is that the simplest
+    possible basic move (rotating one slice 90&deg;) changes the
+    position of almost two thirds of the pieces, and the intersection
+    of any two basic moves changes over a third of the
+    pieces; any simple combination of moves affects pieces all over
+    the puzzle, making it difficult to find short sequences that make
+    only "local adjustments". It is also hard to do "setup moves" to
+    move pieces into place for known sequences.</p>
+
+  <p>A solved cube will have:</p>
+  <ul>
+    <li>the eight corners in unique positions and rotations</li>
+    <li>the twelve edges in unique positions and rotations</li>
+    <li>the six face center pieces in unique positions, but they may be rotated arbitrarily</li>
+    <li>each of the 24 gear pieces on the correct face of the cube,
+    but not necessarily in unique positions; each will have the unique
+    correct rotation for whatever position it's in</li>
+  </ul>
+
+  <dl>
+    <dt>Number of pieces</dt>
+    <dd>50: 8 corners, 12 edges, 6 face centers, 24 gears</dd>
+    <dt>Number of basic moves</dt>
+    <dd>3: rotate the Up, Right, or Front slice 90&deg;. (Any other move can be performed by combining these with whole-puzzle rotations.)</dd>
+    <dt>Number of pieces affected by a basic move</dt>
+    <dd>32</dd>
+    <dt>Minimum intersection between two overlapping basic moves</dt>
+    <dd>19 pieces</dd>
+<!--
+    <dt>Number of permutations</dt>
+    <dd>TBD</dd>
+-->
+    <dt>Changes shape</dt>
+    <dd>Yes</dd>
+    <dt>Number of colors</dt>
+    <dd>6</dd>
+  </dl>
+  
+  <h2>Solution</h2>
+  <p>There are various ways to attack this. I tried a few approaches
+    and found the below to require the fewest total moves. Even so, it
+    involves some long sequences which need to be repeated several
+    times:</p>
+  <ol>
+    <li><a href="#placeCorners">Get the Corners in place, with correct rotations</a></li>
+    <li><a href="#placeGears">Get the Gears in place</a></li>
+    <li><a href="#rotateGears">Rotate the Gears</a></li>
+    <li><a href="#placeEdges">Get Edges in place</a></li>
+    <li><a href="#rotateEdges">Rotate the Edges</a></li>
+  </ol>
+
+  <h3>Notation</h3>
+
+  <h4>Faces</h4>
+  <p>There are six Faces, which we'll label Front, Back, Up, Down,
+    Right, and Left, abbreviated as F, B, U, D, R, and L. The images
+    always show the white Face as Up and the blue Face as Front. But
+    you can assign the colors however you want; the U Face is
+    whichever one is on top at a given time.</p>
+
+  <figure>
+   <img src="images/FaceLabels.jpg" width="400" alt="The labels of the 6 Faces of the cube.">
+   <figcaption>Labels of the six Faces</figcaption>
+  </figure>
+
+  <h4>Moves</h4>
+
+  <p>There are six basic moves: rotate any of the six Faces
+  90&deg; clockwise, <i>as viewed from the corresponding Face</i>. In
+  the sequences below, we'll denote these by the first letter of that
+  Face: F, U, R, B, D, or L.</p>
+
+  <div class="figure-row">
+    <figure>
+      <img src="images/FMove.jpg" width="250" alt="An F move.">
+      <figcaption>F: rotating the Front slice 90&deg; clockwise</figcaption>
+    </figure>
+
+    <figure>
+      <img src="images/UMove.jpg" width="250" alt="A U move.">
+      <figcaption>U: rotating the Up slice 90&deg; clockwise</figcaption>
+    </figure>
+
+    <figure>
+      <img src="images/RMove.jpg" width="250" alt="An R move.">
+      <figcaption>R: rotating the Right slice 90&deg; clockwise</figcaption>
+    </figure>
+  </div>
+  <p>The corresponding B, D, and L moves aren't shown. The key thing
+  to keep in mind is that each move is clockwise as viewed from that
+  Face. So, if you are looking at the cube from the Front, a B move
+  will appear counterclockwise.</p>
+
+  <p>If we want to do the same move multiple times in a row, we'll
+  just put a number after the move. For example:</p>
+  <ul>
+    <li>To rotate the Right slice 270&deg; clockwise, do R three times, denoted as R3.</li>
+    <li>To rotate the Up slice 180&deg; clockwise, do U twice, denoted as U2.</li>
+    <li>To rotate the Front slice 90&deg; counterclockwise, do F seven times, denoted as F7.</li>
+  </ul>
+  <p><b><i>Important Note:</i></b> Rotating by 360&deg; does not bring the
+  puzzle back to its original state. And rotating 270&deg; clockwise
+  is <b>not the same</b> as rotating 90&deg; counterclockwise. The
+  reason is that the central Gear pieces move half as far around as
+  the Face that's being moved. For this reason, F, F2, F3, F4, F5, F6,
+  and F7 are all different moves. If you see an F7, you can just
+  move the Front slice counterclockwise by 90&deg;, but that doesn't
+  work for F3.</p>
+
+
+<!--
+  <h4>Rotations</h4>
+  <p>For each type of piece, we'll define a <i>rotation</i> number
+  below. These definitions are somewhat arbitrary; you could come up
+  with others. What's important is to have some definition that can be
+  applied unambiguously for every piece no matter where it is, which
+  is trickier than it seems.</p>
+-->
+
+  <h4>Corners</h4>
+  <p>There are eight Corner pieces, four on each face, and each Corner
+     on three faces. Number them from 1-8, starting with the
+     Front-Up-Left Corner, going counter-clockwise around the Up face,
+     then Front-Down-Left, going clockwise around the Down face (so
+     that n+4 is directly under n). To distinguish Corners from other
+     types of pieces, we write a C in front of the number, as in
+     C7. All Corner pieces are easily distinguishable from each other
+     by their colors.</p>
+
+  <figure>
+   <img src="images/CornerLabels.jpg" width="400" alt="The labels of the 8 Corners of the cube.">
+   <figcaption>The 8 Corner labels</figcaption>
+  </figure>
+
+
+<!--
+  <p>In any given position, a Corner can have one of three
+     rotations. We'll define a Corner's rotation by designating the Up
+     and Down colors as special. Every Corner piece has exactly one
+     face with one of the special colors, and has exactly one face on
+     the Up or the Down face of the cube. We'll say it has rotation 0
+     if the special color is in Up or Down position. It has rotation 1
+     if the special color is rotated clockwise 120&deg; from
+     Up/Down, viewing the Corner head-on, and likewise rotation 2 if
+     it's rotated 240&deg;. Another way to look at this is, on a
+     solved cube, you can write the numbers 0, 1, 2 on the faces of
+     each Corner, with 0 in the Up/Down face, and 1, 2 going
+     <i>counter</i>-clockwise. Then with a scrambled cube, for any
+     Corner piece, the rotation is the label on the face which is
+     facing Up or Down. Note that any move keeps the total of all
+     Corner rotations unchanged.</p>
+
+  [ diagram showing rotations ]
+-->
+
+  <h4>Gears</h4>
+  <p>There are 24 Gear pieces, four on each face, and each Gear on
+     only a single Face. Number them 1-4 clockwise on each face, with
+     1 being closest to Front, or closest to Up for Gears on the Front
+     and Back faces. So a given Gear is referred to by a face letter
+     and a number, for example F1. The Gears are not fully
+     distinguishable; there are four of each color, which are
+     indistinguishable from each other.</p>
+
+  <div class="figure-row">
+    <figure>
+      <img src="images/GearLabels_Style2.jpg" width="400" alt="The visible Gear labels as viewed from the Front, Up, Right Corner.">
+      <figcaption>The visible Gear labels as viewed from the Front, Up, Right Corner</figcaption>
+    </figure>
+    <figure>
+      <img src="images/GearLabels_Back_Style2.jpg" width="400" alt="The visible Gear labels as viewed from the Back, Down, Left Corner.">
+      <figcaption>The visible Gear labels as viewed from the Back, Down, Left Corner (upside-down and rotated compared to the left image).</figcaption>
+    </figure>
+  </div>
+
+<!--
+  <p>In any given position, a Gear can have one of four rotations. We
+     will say it has rotation 0 if it's oriented correctly with
+     respect to whichever face it's on, and 1, 2, or 3 if it's rotated
+     90, 180, or 270&deg; clockwise (viewing that face head-on)
+     from that, respectively. Note that any move keeps the total of
+     all Gear rotations unchanged.</p>
+
+  [ diagram showing rotations ]
+-->
+
+
+  <h4>Edges: True Edges and Face Center Edges</h4>
+  <p>There are twelve pieces on the edges of the cube, between
+     adjacent Corners, and six pieces on the centers of the faces. We
+     will treat these all as one group, called <i>Edges</i>, since
+     they can be moved to each others' positions by the basic
+     moves. When we need to distinguish between them, we'll call the
+     former <i>True Edges</i> and the latter <i>Face Center
+      Edges</i>.</p>
+
+  <p>Using this terminology, there are a total of 18 Edges. We'll
+     label Face Center Edges by the letter of the Face (e.g. the Face
+     Center Edge on the Up Face is "U"), and label True Edges by the
+     two letters of the Faces they touch (the True Edge between the Up
+     and Right Faces is "UR").</p>
+  
+  <div class="figure-row">
+    <figure>
+      <img src="images/EdgeLabels_Style2b.jpg" width="400" alt="The visible Edge labels as viewed from the Front, Up, Right Corner.">
+      <figcaption>The visible Edge labels as viewed from the Front, Up, Right Corner</figcaption>
+    </figure>
+    <figure>
+      <img src="images/EdgeLabels_Back_Style2b.jpg" width="400" alt="The visible Edge labels as viewed from the Back, Down, Left Corner.">
+      <figcaption>The visible Edge labels as viewed from the Back, Down, Left Corner (upside-down and rotated compared to the left image). Note that some of these Edges are also labeled in the left image, but from the other side.</figcaption>
+    </figure>
+  </div>
+
+  <p>All Edge pieces are easily distinguishable from each other. Note
+     that, unlike Rubik's cube centers, the Face Center Edges here
+     can move independently of each other.</p>
+
+<!--
+  <p>Within a position, an Edge can have one of four rotations, though
+     the rotations of the six Face Center Edges aren't distinguishable,
+     which gives us a bit of freedom in solving the cube. 
+
+     TODO: Define rotations.
+
+     Note that it is <i>not</i> the case that a given move keeps the
+     total of Edge rotations constant. I'd be interested to know if
+     some other scheme for defining Edge rotations exists such that
+     total rotation is conserved.</p>
+  [ diagram showing rotations ]
+
+-->
+
+
+
+
+
+
+  <h3>Detailed Steps</h3>
+  
+  <h4 id="placeCorners">Get the Corners in place, with correct rotations</h4>
+  <p>This is just the same as solving a 2x2x2 Rubik's cube. Ignore all
+    pieces other than the Corners, and solve them using any standard
+    2x2x2 approach.</p>
+
+  <!-- TODO
+       <p>One approach is as follows:</p>
+       [ link to 2x2x2 page ]
+       -->
+       
+
+  <h4 id="placeGears">Get the Gears in place</h4>
+  <p>For now, ignore the Gear rotations; just get them in the correct
+  position (without disturbing the Corners). Note that there are four
+  Gears of each color. For each color, you need to get all four Gears
+  to the correct face (matching the already placed Corners); you are
+  free to choose which Gear of a given color goes in which spot on its
+  face.</p>
+
+  <p>There's not much structure to the approach. Just repeatedly use the
+  sequences below, in order, to permute Gears as needed until they're
+  all on their correct faces.</p>
+  
+  <ol>
+    <li><p>Start by using F4, R4, or U4 to move Gears from opposite Faces
+    (eg. from the Right Face to the Left Face) into place. This is
+    easy, but you can only do so much of it before it starts mixing up
+    already-placed Gears.</p></li>
+
+    <li>To swap additional Gear pairs from opposite Faces, use the
+      following two in combination:
+      <dl class="aligned">
+	<dt>F2 R4 F6</dt>
+	<dd>does (F1 B1) (F3 B3) (U1 U3) (D1 D3). This swaps two pairs
+	of Gears between the Front and Back Faces. It also swaps Gears
+	within the Up Face and within the Down Face. For our purposes,
+	swapping Gears within a Face doesn't affect anything, so you
+	can think of this sequence as just doing (F1 B1) (F3 B3). But
+	these within-Face swaps severely limit what kinds of setup
+	moves you can do to utilize this sequence, so for setup moves
+	use...</dd>
+	<dt>(F R7)x9</dt>
+	<dd>does (R2 R3) (F3 F4). This only swaps Gears within Faces. Use this to get Gears in place for the above.</dd>
+      </dl>
+
+      <p>After this step, every Gear should be in either its
+      correct Face or an adjacent Face.</p>
+    </li>
+    <li>To move Gears between adjacent Faces, the main sequence is:
+
+      <dl class="aligned">
+	<dt>S<sub>1</sub> = (F R3 F5 U4)x6</dt>
+	<dd>does (F2 D3) (B2 U3), swapping two pairs of Gears from
+	  two pairs of Faces.</dd>
+      </dl>
+
+      <p>You can use S<sub>1</sub> in combination with simple setup
+	  moves to swap just two Gears from different Faces (along
+	  with swapping a pair within the Up Face):</p>
+      <dl class="aligned">
+	<dt>D L7 S<sub>1</sub> L D7</dt>
+
+	<dd>does (F4 R4) (U1 U2), swapping from adjacent Faces. It is
+	especially useful to use the (F R7)x9 sequence from above to
+	position Gears within the Front and Right Faces before using
+	this sequence. In fact, this is all you need to get all Gears
+	in place, and this is usually all I use. But some other
+	sequences may reduce the effort in certain situations.</dd>
+
+	<dt>L7 S<sub>1</sub> L</dt>
+	<dd>does (B3 F2) (U1 U2), swapping from opposite Faces</dd>
+	</dl>
+      <p>These are relatively short sequences. You have to be careful
+      with any setup moves to make sure they don't interfere with U1
+      and U2. Note that with both of these, a setup of R7 changes
+      (U1 U2) to (U3 U2), still in the same face.</p>
+    </li>
+
+    <li><p>Other setup moves let you cycle three Gears among two
+	  Faces:</p>
+
+      <dl class="aligned">
+	<dt>F  S<sub>1</sub>  F7 S<sub>1</sub> </dt><dd>does  (F1 F2 D3)</dd>
+	<dt>F2 S<sub>1</sub>  F6 S<sub>1</sub> </dt><dd>does  (F4 F2 D3)</dd>
+	<dt>F3 S<sub>1</sub>  F5 S<sub>1</sub> </dt><dd>does  (F3 F2 D3)</dd>
+	<dt>S<sub>1</sub>  F  S<sub>1</sub>  F7</dt><dd>does  (F2 F1 D3)</dd>
+	<dt>S<sub>1</sub>  F2 S<sub>1</sub>  F6</dt><dd>does  (F2 F4 D3)</dd>
+	<dt>S<sub>1</sub>  F3 S<sub>1</sub>  F5</dt><dd>does  (F2 F3 D3)</dd>
+      </dl>
+      <p>You can use the (F R7)x9 sequence from above (after rotating
+      the entire cube) to position Gears in the Down Face into the D3
+      spot, which comes up in all of these sequences.</p>
+    </li>
+    </ol>
+
+  <p>At this point, the cube should appear to be nearly solved; sadly, there's
+  still quite a long ways to go...</p>
+
+  <figure>
+   <img src="images/PartialSolve_GearsPlaced.jpg" width="400" alt="The cube with Corners solved and Gears placed, appearing to be mostly solved.">
+   <figcaption>Corners solved, Gears in place but incorrectly rotated.</figcaption>
+  </figure>
+
+
+  <h4 id="rotateGears">Rotate the Gears</h4>
+
+  <p>Next you need to rotate all the Gears into their correct
+    orientations. It simplifies things to split this into two steps:
+    first get all the Gears into "even" rotations, either correct or
+    flipped (rotated 180&deg;); then fix the Gears that remain
+    flipped.</p>
+
+  <p>First, rotate the Gears so that each one is either correctly
+  rotated or flipped. The useful sequences here are:</p>
+  <dl class="aligned">
+    <dt>S<sub>2</sub> = (R7 U)x18</dt>
+    <dd>rotates U2 and U3 clockwise, and R1 and R4
+      counterclockwise. Two pairs on adjacent Faces. Though the
+      sequence has a "x18", it's simpler than some others since the
+      repeating part is short and simple.</dd>
+
+    <dt>S<sub>3</sub> = (U R7)x18</dt>
+    <dd>rotates U1 and U2 clockwise, and R3 and R4
+      counterclockwise. The mirror image of S<sub>2</sub>.</dd>
+
+    <dt>S<sub>4</sub> = (F R3 F5 U4)x12</dt>
+    <dd>rotates F2, B2, D3, and U3 clockwise. Like S<sub>2</sub>, this
+    does four odd rotations. The F2 Gear is isolated on the Front
+    slice, making it easy to do setups. Note that S<sub>4</sub> is
+    just S<sub>1</sub>x2.</dd>
+
+  </dl>
+  <p>(All of these sequences also flip some Gears and move some Edges
+  around, or even move (but not rotate) Gears within a Face, none of
+  which we care about at this stage.)</p>
+    
+  <p>You can get a lot of mileage out of S<sub>2</sub> and various
+  setup moves:</p>
+  <dl class="aligned">
+    <dt>F S<sub>2</sub> F7</dt>
+    <dd>rotates U1, U3, R2, L4. A symmetrical pattern involving three
+      Faces. What's nice about this sequence is that all four of the
+      affected Gears are on the upper half of the cube, which makes it
+      feasible to do simple setup moves involving D.</dd>
+
+    <dt>F5 S<sub>2</sub> F3</dt>
+    <dd>rotates U1, U3, R4, L2. Similar to above, but involves Gears
+      from the lower slice.</dd>
+
+    <dt>D F5 S<sub>2</sub> F3 D7</dt>
+    <dd>rotates U1, U3, F3, B3. Gears all in the "center slice".</dd>
+  </dl>
+  
+  <p>In case you can't find four odd-rotated Gears in positions that
+    match any of the above sequences, you don't always have to fix four
+  Gears at once; if you can apply a sequence to fix three Gears and
+  disrupt one, that's still a net gain of two correct Gears. Keep at
+  it until none of the above can be applied. Then you can try more
+  elaborate setups, or try the below sequences for fixing two Gears at
+  a time.</p>
+
+  <p>If you get down to exactly two remaining Gears needing rotation,
+  one of the following may be helpful, depending on where those two
+    Gears are located:</p>
+
+  <dl class="aligned">
+    <dt>S<sub>4</sub> F  S<sub>4</sub> F7</dt><dd>rotates F1 and F2 clockwise. Adjacent Gears on the same Face.</dd>
+    <dt>S<sub>4</sub> F2 S<sub>4</sub> F6</dt><dd>rotates F2 and F4 clockwise. Opposite Gears on the same Face.</dd>
+    <dt>S<sub>5</sub> = (F R F2 R7 U7)x18</dt><dd>rotates U2 and U3 counterclockwise. Adjacent Gears on the same Face, slightly fewer moves than above.</dd>
+    <dt>B7 R7 S<sub>4</sub> F2 S<sub>4</sub> F6 R B</dt><dd>rotates U2
+    and F4 clockwise. Gears on adjacent Faces in the same
+    "slice".</dd>
+  </dl>
+
+  <div class="figure-row">
+    <figure>
+      <img src="images/PartialSolve_GearsEvenRotated.jpg" width="400" alt="The cube with Gears in place and having even rotations.">
+      <figcaption>Corners solved, Gears in place and having even rotation (either correct or flipped).</figcaption>
+    </figure>
+    <figure>
+      <img src="images/GearsEvenRotationCloseup.jpg" width="400" alt="A view from another angle, showing more clearly some correct and flipped Gears.">
+      <figcaption>A different angle showing some Gears with correct rotation and some that are rotated 180&deg;, or flipped.</figcaption>
+    </figure>
+  </div>
+
+
+  <p>Once all Gears have "even rotation" (either correctly rotated or
+    flipped), proceed as below to fix the rest. This is the
+    most tedious step. All of the sequences are long, involving 70
+    moves or more; I couldn't find anything better. The good news is
+    that if you can get through this, the rest is relatively easier.</p>
+
+  <p>There will be an even number of Gears that need to be
+    flipped. (You can show that any move leaves the total rotation of
+    all Gears unchanged. Since the original solved cube has 0 total
+    rotation, every state of the cube must have 0 total rotation,
+    which wouldn't be the case if exactly one Gear was rotated). The
+    following sequences flip either two or four Gears at a time (most
+    of them also move various Edge pieces around, which we don't care
+    about yet).</p>
+
+  <dl class="aligned">
+    <dt>S<sub>6</sub> = F S<sub>2</sub> S<sub>2</sub> F D F7 S<sub>2</sub> S<sub>2</sub> F D7 F6</dt>
+    <dd>flips R2 and R4, two opposite pieces on the same Face. (Recall S<sub>2</sub> = (R7 U)x18).</dd>
+    <dt>U2 L7 U6 S<sub>6</sub> U2 L U6</dt>
+    <dd>flips F2 and R4, two pieces in awkward positions on adjacent Faces.</dd>
+    <dt>(R7 U)x36</dt>
+    <dd>flips R1, R4, U2, and U3. Note this is just S<sub>2</sub>x2.</dd>
+    <dt>(F R7)x36</dt>
+    <dd>flips F3, F4, R2, and R3. This is the mirror image of the previous sequence.</dd>
+    <dt>S<sub>7</sub> = L7 (F R3 F5 U4)x24 L</dt>
+    <dd>flips U1, U2, F2, and B3. This is a long sequence, but is
+      sometimes helpful. Note that it uses S<sub>4</sub> twice (and
+      S<sub>4</sub> in turn uses S<sub>1</sub> twice).</dd>
+  </dl>
+
+  <p>You can solve all the Gears using only S<sub>6</sub> along with
+    setup moves, flipping two Gears at a time. The other (shorter)
+    sequences may be convenient if the flipped Gears happen to be in
+    certain configurations, but it's difficult to do setup moves for
+    them because they involve four Gears on multiple Faces.</p>
+
+  <figure>
+    <img src="images/PartialSolve_GearsDone.jpg" width="400" alt="The cube with all Corners and Gears solved.">
+    <figcaption>Getting close: Corners and Gears fully solved.</figcaption>
+  </figure>
+
+  <h4 id="placeEdges">Get Edges in place</h4>
+
+  <p>The hardest part is done. From here on the sequences are shorter
+  and there are fewer pieces to deal with. To get the Edges (including
+  Face Center Edges) into place, the basic sequence is:</p>
+  <dl class="aligned">
+    <dt>S<sub>8</sub> = (F R4 F7 R4)x3</dt>
+    <dd>does (DR UL) (U D), swapping one pair of opposite True Edges
+    and one pair of opposite Face Center Edges</dd>
+  </dl>
+
+  <p>All of the sequences below involve S<sub>8</sub>.</p>
+
+  <p>First use these sequences to get all Face Center Edges into their
+  correct positions. Each sequence is a 3-cycle with two True Edges
+  and a Face Center Edge. Specifically, each one moves a piece from
+  the UL position to some Face Center position. These are all you
+  need, but for some pieces you may need to use them more than
+  once.</p>
+  <dl class="aligned">
+    <dt>R  S<sub>8</sub> U S<sub>8</sub> U7 R7</dt><dd>does (BR UL F). Moves UL to an adjacent Face.</dd>
+    <dt>R3 S<sub>8</sub> U S<sub>8</sub> U7 R5</dt><dd>does (FR UL D). Moves UL to a non-adjacent Face.</dd>
+    <dt>R7 S<sub>8</sub> U S<sub>8</sub> U7 R </dt><dd>does (FR UL U). Moves UL to the same Face.</dd>
+  </dl>
+      
+  <p>Then get the True Edges into position using:</p>
+  <dl class="aligned">
+    <dt>S<sub>8</sub> U S<sub>8</sub> U7</dt><dd>does (DR UL
+    UF). 3-cycle of True Edges, can setup the DR Edge from any Down
+    Edge. I start out with this one, just getting one piece into
+    position (from DR to UL) at a time, until I can no longer use it
+    without making things worse.</dd>
+    <dt>R6 S<sub>8</sub> U S<sub>8</sub> U7 R2</dt><dd>does (UB UR
+    UL). 3-cycle of True Edges on the same Face. This is the one I use
+    the most, after the above is no longer useful.</dd>
+    <dt>R S<sub>8</sub> R7</dt><dd>does (BR UL) (UF DB). Swaps two pairs of opposite True Edges, no Face Center Edges</dd>
+  </dl>
+
+  <p>You can even use S<sub>8</sub> itself, doing (DR UL) (U D), but you'll
+  need to swap the Face Center Edges (U D) back at some point.</p>
+
+  <figure>
+    <img src="images/PartialSolve_EdgesPlaced.jpg" width="400" alt="The cube with all Corners and Gears solved, and all Edges in place, but not yet rotated correctly.">
+    <figcaption>Almost there: just need to rotate some Edges.</figcaption>
+  </figure>
+
+  <h4 id="rotateEdges">Rotate the Edges</h4>
+
+  <p>Finally, rotate the Edges. Note that the Face Center Edge
+  rotations don't matter, as long as they're in place, so you only need
+  to rotate the True Edges. As with Gears, it turns out to simplify
+  things if you first rotate all the Edges into "even" rotations
+  (either correct or flipped (rotated 180&deg;)); then fix the remaining
+  flipped ones.</p>
+
+  <p>First, rotate the Edges so that each is either correct or
+  flipped. The only sequence needed here is S<sub>9</sub>:</p>
+
+  <dl class="aligned">
+    <dt>S<sub>9</sub> = (S<sub>8</sub> U S<sub>8</sub>
+    U7)x3</dt><dd>rotates FR clockwise and BL counterclockwise. It
+    also rotates four Face Center Edges, but this has no visible
+    effect.</dd>
+  </dl>
+
+  <p>S<sub>9</sub> rotates one pair of opposite Edges an odd
+    amount. At this stage you don't need to get the rotations right;
+    just get them to right or flipped. (With some care, though, you
+    can arrange things so that you're mostly putting things right
+    rather than flipped). You can repeatedly use S<sub>9</sub> with
+    simple setup moves to do this for all Edges.</p>
+
+  <p>It can happen that there are an odd number of Edge pieces with
+    odd rotation. In that case, you can move one of the Face Center
+    Edges to a True Edge position and rotate that 90&deg;, then move
+    it back. For example, if the sole odd-rotated Edge is in position
+    FR, then you can move U to position BL by doing (B L7), then move
+    it back with (L B7) afterwards. That will unfortunately cause four
+    of the True Edges to temporarily move to Face Centers, where they
+    also get rotated by 1/4 turn, so you end up with four odd-rotated
+    Edges. But then you can use the above to get those all back to
+    even rotations:</p>
+  
+  <dl class="aligned">
+    <dt>B L7 S<sub>9</sub> L B7</dt>
+    <dd>rotates FR, DF, and UF clockwise, and BL and BR
+    counterclockwise. It also rotates one Face Center Edge, which has
+    no visible effect.</dd>
+  </dl>
+
+  <p>At this point, the puzzle is solved except that some True Edges
+  are flipped. You can finish up by repeatedly applying the following
+  sequence, in conjunction with setup moves, to flip two Edges at a
+  time:</p>
+  
+  <dl class="aligned">
+    <dt>S<sub>10</sub> = R S<sub>8</sub> S<sub>8</sub> R7</dt>
+    <dd>flips DF and UB, opposite True Edges.</dd>
+  </dl>
+
+  <figure>
+      <img src="images/Solved.jpg" width="400" alt="The solved cube.">
+      <figcaption>At long last: Hooray!</figcaption>
+  </figure>
+
+
+  <h3>Notes on Solution</h3>
+  <p>Some of the sequences above are unusually long compared to other
+  puzzles. There may be shorter ones; these are the best I could
+  find. A lot of these are repetitions of shorter sequences.</p>
+	
+  <p>The sequences to move the Gears around are long and tedious. This
+  is especially unpleasant because there are 24 Gears. One way to
+  simplify things might be to solve Gears before Corners; maybe there
+  are simpler Gear-solving sequences if we don't have to worry about
+  disrupting Corners. For this to work, we'd then need to find
+  Corner-solving sequences that don't disrupt the Gears.</p>
+
+  <p>I found it much easier to rotate Gears before solving Edges,
+  rather than the other way around. Sequences that rotate Gears while
+  leaving Edges unchanged are even more painful than what I ended up
+  with above.</p>
+
+</body>
+</html>
